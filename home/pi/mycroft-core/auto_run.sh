@@ -398,7 +398,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
                 sudo reboot
             fi
 
-            source "$TOP"/.wizard.sh -all
+            source "$TOP"/wizard.sh -all
             update_software
 
             save_choices firstrun false
