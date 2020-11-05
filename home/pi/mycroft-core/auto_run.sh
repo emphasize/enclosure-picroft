@@ -34,8 +34,8 @@ fi
 
 REPO_PICROFT="https://raw.githubusercontent.com/emphasize/enclosure-picroft/refactor_setup_wizard"
 
-cd $(dirname $0)
-TOP=$(pwd -L)
+#Works with source/bash/...
+TOP=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 function found_exe() {
     hash "$1" 2>/dev/null
@@ -245,18 +245,22 @@ function update_software() {
                 if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
                     #Regular patch process
                     mv ~/.bashrc ~/.bashrc.bak
-                    wget -N wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
-                    diff ~/.bashrc.bak ~/.bashrc > ~/.bashrc.patch
-                    #erase all ">"-lines + positional header
-                    #to ensure only custom ADDITIONS are kept
-                    sed -i '$!N;/^>/!P;D' ~/.bashrc.patch
-                    #reverse patch the custom part
-                    patch -R ~/.bashrc < ~/.bashrc.patch
-                    mv ~/.bashrc.patch ~/.bashrc.patch.old
-                    echo
-                    echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
-                    echo "Patch can be reversed by typing 'patch .bashrc .bashrc.patch.old'"
-                    echo
+                    wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
+                    cmp ~/.bashrc ~/.bashrc.bak
+                    if  [ $? -eq 1 ] ; then
+                        save_choices bash_patched true
+                        diff ~/.bashrc.bak ~/.bashrc > ~/.bashrc.patch
+                        #erase all ">"-lines + positional header
+                        #to ensure only custom ADDITIONS are kept
+                        sed -i '$!N;/^>/!P;D' ~/.bashrc.patch
+                        #reverse patch the custom part
+                        patch -R ~/.bashrc < ~/.bashrc.patch
+                        mv ~/.bashrc.patch ~/.bashrc.patch.old
+                        echo
+                        echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
+                        echo "Patch can be reversed by typing 'patch .bashrc .bashrc.patch.old'"
+                        echo
+                    fi
                 else
                     wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
                 fi
@@ -276,8 +280,7 @@ function update_software() {
 
         cd "$TOP"
         time_last_pull=$(stat -c %Y .git/FETCH_HEAD)
-        timenow=$(date +"s")
-        timedelta=$($time_between_updates -($timenow - $time_last_pull))
+        timedelta=$(( $time_between_updates + $time_last_pull - $EPOCHSECONDS ))
         echo -n "Checking for mycroft-core updates..."
 
         if [[ $timedelta < 0 ]] ; then
@@ -287,10 +290,10 @@ function update_software() {
                 if [[ $dist == 'debian' ]] ; then
                     sudo apt-get -o Acquire::ForceIPv4=true update -y
                 fi
-                bash dev_setup.sh
+                source "$TOP"/dev_setup.sh
             fi
         else
-            echo -n "... Skipping check for the next $( $timedelta / 60 ) Minutes"
+            echo -n "... Skipping check for the next $(( $timedelta / 60 )) Minutes"
         fi
         cd "$TOP"
     fi
