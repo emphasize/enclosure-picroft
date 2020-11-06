@@ -342,7 +342,7 @@ echo -e "${RESET}"
 echo
 
 # Read the current mycroft-core version
-source mycroft-core/venv-activate.sh -q
+source "$TOP"/venv-activate.sh -q
 mycroft_core_ver=$(python -c "import mycroft.version; print('mycroft-core: '+mycroft.version.CORE_VERSION_STR)" && echo "steve" | grep -o "mycroft-core:.*")
 mycroft_core_branch=$(cd mycroft-core && git branch | grep -o "/* .*")
 
@@ -401,7 +401,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
                 sudo reboot
             fi
 
-            source "$TOP"/wizard.sh -all
+            bash "$TOP"/wizard.sh -all
             update_software
 
             save_choices firstrun false
@@ -415,12 +415,12 @@ fi
 if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
 
     # Auto-update to latest version of mycroft-core (and Picroft if opted)
-    if $( jq .autoupdate .dev_opts.json ) ; then
+    if $( jq .autoupdate "$TOP"/.dev_opts.json ) ; then
         update_software
     fi
 
 
-    if $( jq .startup .dev_opts.json) ; then
+    if $( jq .startup "$TOP"/.dev_opts.json) ; then
     # Make sure the audio is being output reasonably.  This can be set
     # to match user preference in audio_setup.sh.  DON'T EDIT HERE,
     # the script will likely be overwritten during later updates.
@@ -460,7 +460,7 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
         mycroft-help
         echo
         #triggering when pair_text is set
-        if [[ -n $( jq -r '.pair_text // empty' .dev_opts.json ) ]] ; then
+        if [[ -n $( jq -r '.pair_text // empty' "$TOP"/.dev_opts.json ) ]] ; then
             echo "Mycroft is completing startup, ensuring all of the latest versions"
             echo "of skills are installed.  Within a few minutes you will be prompted"
             echo "to pair this device with the required online services at:"
