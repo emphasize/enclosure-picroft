@@ -85,7 +85,7 @@ if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
     save_choices inst_type picroft
     save_choices startup true
     save_choices autoupdate false
-    save_choices reboot false
+    save_choices redirect none
 else
     dist=$( jq -r ".dist" "$TOP"/.dev_opts.json )
 fi
