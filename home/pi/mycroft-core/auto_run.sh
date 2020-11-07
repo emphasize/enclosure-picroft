@@ -341,8 +341,11 @@ echo "       |_|      |_|  \___| |_|     \___/  |_|    \__|"
 echo -e "${RESET}"
 echo
 
+#only activate if not already sourcedS
+if [[ -n $( env | grep "VIRTUAL_ENV") ]]; then
+    source "$TOP"/venv-activate.sh -q
+fi
 # Read the current mycroft-core version
-source "$TOP"/venv-activate.sh -q
 mycroft_core_ver=$(python -c "import mycroft.version; print('mycroft-core: '+mycroft.version.CORE_VERSION_STR)" && echo "steve" | grep -o "mycroft-core:.*")
 mycroft_core_branch=$(cd mycroft-core && git branch | grep -o "/* .*")
 
