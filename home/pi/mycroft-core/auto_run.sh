@@ -80,6 +80,7 @@ function save_choices() {
 #Picroft Wizard sequence
 if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
     save_choices firstrun true
+    save_choices initial_setup true
     save_choices dir $TOP
     save_choices dist debian
     save_choices inst_type picroft
@@ -395,7 +396,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
          [Yy])
             echo $key
             echo
-            save_choices pair_text true
+            #save_choices pair_text true
             # Handle internet connection
             network_setup
             if [ $? -eq 1 ] ; then
@@ -404,7 +405,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
                 sudo reboot
             fi
 
-            bash "$TOP"/wizard.sh -all
+            source "$TOP"/wizard.sh -all
             update_software
 
             save_choices firstrun false
@@ -462,19 +463,18 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
         echo
         mycroft-help
         echo
-        #triggering when pair_text is set
-        if [[ -n $( jq -r '.pair_text // empty' "$TOP"/.dev_opts.json ) ]] ; then
+        #triggering when initial_setup
+        if $( jq .initial_setup "$TOP"/.dev_opts.json ) ; then
             echo "Mycroft is completing startup, ensuring all of the latest versions"
             echo "of skills are installed.  Within a few minutes you will be prompted"
             echo "to pair this device with the required online services at:"
             echo "https://home.mycroft.ai"
             echo "where you can enter the pairing code."
+            echo
             sleep 5
-            read -p "${HIGHLIGHT}Press enter to launch the Mycroft CLI client.${RESET}"
+            read -p "     ${HIGHLIGHT}Press enter to launch the Mycroft CLI client.${RESET}"
 
-            JSON=$(cat "$TOP"/.dev_opts.json | jq 'del(.pair_text)')
-            echo "$JSON" > "$TOP"/.dev_opts.json
-
+            save_choices initial_setup false
             "$TOP/start-mycroft.sh" cli
         else
             echo "Mycroft is now starting in the background."
