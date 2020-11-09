@@ -255,7 +255,8 @@ function update_software() {
                         diff ~/.bashrc.bak ~/.bashrc > ~/.bashrc.patch
                         #erase all ">"-lines + positional header
                         #to ensure only custom ADDITIONS are kept
-                        sed -i '$!N;/^>/!P;D' ~/.bashrc.patch
+                        sed -i '$!N;/\n>/!P;D' ~/.bashrc.patch
+                        sed -i '/^>/d' ~/.bashrc.patch
                         #reverse patch the custom part
                         patch -R ~/.bashrc < ~/.bashrc.patch
                         mv ~/.bashrc.patch ~/.bashrc.patch.old
