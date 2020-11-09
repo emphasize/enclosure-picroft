@@ -300,6 +300,7 @@ function update_software() {
             fi
         else
             echo -n "... Skipping check for the next $(( $timedelta / 60 )) Minutes"
+            echo
         fi
         cd "$TOP"
     fi
@@ -321,13 +322,19 @@ function speak() {
 # if keys don't exist. This is needed because
 # ./bin/mycroft-wipe will delete old keys as
 # a security measures
+# Todo hook on other distros
 if ! ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
-    echo "Generating fresh ssh host keys"
-    sudo dpkg-reconfigure openssh-server
-    sudo systemctl restart ssh
-    echo "New ssh host keys were created. this requires a reboot"
-    sleep 2
-    sudo reboot
+    if [[ $( jq -r .dist "$TOP"/.dev_opts.json ) = "debian" ]]; then
+        echo "Generating fresh ssh host keys"
+        sudo dpkg-reconfigure openssh-server
+        sudo systemctl restart ssh
+        echo "New ssh host keys were created. this requires a reboot"
+        sleep 2
+        sudo reboot
+    else
+        echo "${HIGHLIGHT} NEW SSH KEYS HAVE TO BE CREATED ${RESET}"
+        echo
+    fi
 fi
 
 echo -e "${CYAN}"
