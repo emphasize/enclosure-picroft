@@ -268,7 +268,7 @@ function update_software() {
                     wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
                 fi
                 cd "$TOP"
-                wget -N $REPO_PICROFT/home/pi/mycroft_core/auto_run.sh
+                wget -N $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
                 cd "$TOP"/bin
                 wget -N $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
                 chmod +x mycroft-wipe
