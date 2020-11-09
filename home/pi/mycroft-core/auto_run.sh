@@ -252,17 +252,16 @@ function update_software() {
                     cmp ~/.bashrc ~/.bashrc.bak
                     if  [ $? -eq 1 ] ; then
                         save_choices bash_patched true
-                        diff ~/.bashrc.bak ~/.bashrc > ~/.bashrc.patch
-                        #erase all ">"-lines + positional header
-                        #to ensure only custom ADDITIONS are kept
-                        sed -i '$!N;/\n>/!P;D' ~/.bashrc.patch
-                        sed -i '/^>/d' ~/.bashrc.patch
-                        #reverse patch the custom part
-                        patch -R ~/.bashrc < ~/.bashrc.patch
-                        mv ~/.bashrc.patch ~/.bashrc.patch.old
+                        # delete last 4 lines of the pulled .bashrc (eg the Initialization)
+                        sed -i "$(($(wc -l < .bashrc) - 3)),\$d" .bashrc
+                        # Pull the lines after "custom code below"
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' .bashrc.bak | \
+                        tee -a .bashrc &> /dev/null
+                        # Save custom changes so it can easily be reverted during wizard
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' .bashrc.bak | \
+                        tee .bashrc.patch.bak &> /dev/null
                         echo
                         echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
-                        echo "Patch can be reversed by typing 'patch .bashrc .bashrc.patch.old'"
                         echo
                     fi
                 else
