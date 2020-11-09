@@ -84,6 +84,7 @@ if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
     save_choices dir $TOP
     save_choices dist debian
     save_choices inst_type picroft
+    save_choices mimic_built true
     save_choices startup true
     save_choices autoupdate false
     save_choices redirect none
@@ -231,7 +232,7 @@ function update_software() {
 
         cd /tmp
         # Looking for a new enclosure-picroft version
-        wget -N -q $REPO_PICROFT/home/pi/mycroft_core/version >/dev/null
+        wget -N -q $REPO_PICROFT/home/pi/mycroft-core/version
         if [ $? -eq 0 ] ; then
             if [ ! -f "$TOP"/version ] ; then
                 echo "unknown" > "$TOP"/version
@@ -242,6 +243,7 @@ function update_software() {
                 # Versions don't match...update needed
                 echo "**** Update found, downloading new Picroft scripts!"
                 speak "Updating Picroft, please hold on."
+                cd ~
 
                 if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
                     #Regular patch process
@@ -265,15 +267,18 @@ function update_software() {
                 else
                     wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
                 fi
+                cd "$TOP"
                 wget -N $REPO_PICROFT/home/pi/mycroft_core/auto_run.sh
-                cd ~/bin
+                cd "$TOP"/bin
                 wget -N $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
                 chmod +x mycroft-wipe
                 cp /tmp/version "$TOP"/version
 
                 # restart
                 echo "Restarting..."
-                speak "Update complete, restarting."
+                if $( jq .mimic_built "$TOP"/.dev_opts.json); then
+                    speak "Update complete, restarting."
+                fi
                 sudo reboot now
 
             fi
@@ -284,7 +289,7 @@ function update_software() {
         timedelta=$(( $time_between_updates + $time_last_pull - $EPOCHSECONDS ))
         echo -n "Checking for mycroft-core updates..."
 
-        if [[ $timedelta < 0 ]] ; then
+        if [[ $timedelta -lt 0 ]] ; then
             git fetch
             if [[ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]] ; then
                 git pull
@@ -430,8 +435,11 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
     # the script will likely be overwritten during later updates.
     #
     # Default to analog audio jack at 75% volume
-        amixer cset numid=3 "1" > /dev/null 2>&1
-        set_volume 75%
+
+        if [[ -z $( jq -r '.audiooutput // empty' "$TOP"/.dev_opts.json ) ]] ; then
+            amixer cset numid=3 "1" > /dev/null 2>&1
+            set_volume 75%
+        fi
 
         # Check for custom audio setup
         if [ -f audio_setup.sh ]
