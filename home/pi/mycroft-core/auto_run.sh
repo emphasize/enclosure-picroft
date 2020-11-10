@@ -248,7 +248,7 @@ function update_software() {
                 if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
                     #Regular patch process
                     mv ~/.bashrc ~/.bashrc.bak
-                    wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
+                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
                     cmp ~/.bashrc ~/.bashrc.bak
                     if  [ $? -eq 1 ] ; then
                         save_choices bash_patched true
@@ -265,12 +265,12 @@ function update_software() {
                         echo
                     fi
                 else
-                    wget -N $REPO_PICROFT/home/pi/mycroft-core/.bashrc
+                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
                 fi
                 cd "$TOP"
-                wget -N $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
+                wget -N -q $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
                 cd "$TOP"/bin
-                wget -N $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
+                wget -N -q S$REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
                 chmod +x mycroft-wipe
                 cp /tmp/version "$TOP"/version
 
@@ -280,7 +280,6 @@ function update_software() {
                     speak "Update complete, restarting."
                 fi
                 sudo reboot now
-
             fi
         fi
 
@@ -334,6 +333,7 @@ if ! ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
     else
         echo "${HIGHLIGHT} NEW SSH KEYS HAVE TO BE CREATED ${RESET}"
         echo
+        sleep 3
     fi
 fi
 
@@ -354,16 +354,15 @@ echo "       |_|      |_|  \___| |_|     \___/  |_|    \__|"
 echo -e "${RESET}"
 echo
 
-#only activate if not already sourcedS
-if [[ -n $( env | grep "VIRTUAL_ENV") ]]; then
-    source "$TOP"/venv-activate.sh -q
-fi
+source ${TOP}/.venv/bin/activate
+
 # Read the current mycroft-core version
+cd "$TOP"
 mycroft_core_ver=$(python -c "import mycroft.version; print('mycroft-core: '+mycroft.version.CORE_VERSION_STR)" && echo "steve" | grep -o "mycroft-core:.*")
 mycroft_core_branch=$(cd mycroft-core && git branch | grep -o "/* .*")
 
 echo "***********************************************************************"
-echo "** Picroft enclosure platform version:" $(<version)
+echo "** Picroft enclosure platform version:" $(<"$TOP"/version)
 echo "**                       $mycroft_core_ver ( ${mycroft_core_branch/* /} )"
 echo "***********************************************************************"
 sleep 2  # give user a few moments to notice the version
@@ -392,8 +391,8 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
             echo $key
             echo
             echo "Alright, have fun!"
-            echo "NOTE: If you decide to use the wizard later, just type './wizard.sh -all'"
-            echo "for the whole wizard process or './wizard.sh' for a table of setup choices"
+            echo "NOTE: If you decide to use the wizard later, just type 'mycroft-wizard -all'"
+            echo "for the whole wizard process or 'mycroft-wizard' for a table of setup choices"
             echo
             echo "You are currently running with these defaults:"
             echo
@@ -417,7 +416,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
                 sudo reboot
             fi
 
-            source "$TOP"/wizard.sh -all
+            source "$TOP"/bin/mycroft-wizard -all
             update_software
 
             save_choices firstrun false
@@ -483,7 +482,7 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
             echo "Mycroft is completing startup, ensuring all of the latest versions"
             echo "of skills are installed.  Within a few minutes you will be prompted"
             echo "to pair this device with the required online services at:"
-            echo "https://home.mycroft.ai"
+            echo "${CYAN}https://home.mycroft.ai${RESET}"
             echo "where you can enter the pairing code."
             echo
             sleep 5
