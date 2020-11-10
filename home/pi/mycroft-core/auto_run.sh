@@ -242,7 +242,9 @@ function update_software() {
             if  [ $? -eq 1 ] ; then
                 # Versions don't match...update needed
                 echo "**** Update found, downloading new Picroft scripts!"
-                speak "Updating Picroft, please hold on."
+                if $( jq .mimic_built "$TOP"/.dev_opts.json); then
+                    speak "Updating Picroft, please hold on."
+                fi
                 cd ~
 
                 if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
@@ -255,7 +257,7 @@ function update_software() {
                         # delete last 4 lines of the pulled .bashrc (eg the Initialization)
                         sed -i "$(($(wc -l < .bashrc) - 3)),\$d" .bashrc
                         # Pull the lines after "custom code below"
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' .bashrc.bak | \
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /bash/ {p=0}' .bashrc.bak | \
                         tee -a .bashrc &> /dev/null
                         # Save custom changes so it can easily be reverted during wizard
                         awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' .bashrc.bak | \
@@ -448,10 +450,9 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
         fi
 
         # Check for custom audio setup
-        if [ -f audio_setup.sh ]
+        if [ -f "$TOP"/audio_setup.sh ]
         then
-            source audio_setup.sh
-            cd "$TOP"
+            source "$TOP"/audio_setup.sh
         fi
 
         # verify network settings
@@ -463,10 +464,9 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
         fi
 
         # Check for custom Device setup
-        if [ -f custom_setup.sh ]
+        if [ -f "$TOP"/custom_setup.sh ]
         then
-            source custom_setup.sh
-            cd "$TOP"
+            source "$TOP"/custom_setup.sh
         fi
 
         # Launch Mycroft Services ======================
