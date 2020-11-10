@@ -34,8 +34,10 @@ fi
 
 REPO_PICROFT="https://raw.githubusercontent.com/emphasize/enclosure-picroft/refactor_setup_wizard"
 
-#Works with source/bash/...
-TOP=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+#since it has to be sourced and is not bound to ~/ we have to go this route
+source_name=$( readlink -f ${BASH_SOURCE})
+TOP=${source_name%/*}
+
 
 function found_exe() {
     hash "$1" 2>/dev/null
@@ -92,7 +94,7 @@ else
     dist=$( jq -r ".dist" "$TOP"/.dev_opts.json )
 fi
 
-export PATH="$TOP/bin:$PATH"
+export PATH="$PATH:$TOP/bin"
 
 #Set timer for a new pull
 time_between_updates=3600
@@ -257,7 +259,7 @@ function update_software() {
                         # delete last 4 lines of the pulled .bashrc (eg the Initialization)
                         sed -i "$(($(wc -l < .bashrc) - 3)),\$d" .bashrc
                         # Pull the lines after "custom code below"
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /bash/ {p=0}' .bashrc.bak | \
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' .bashrc.bak | \
                         tee -a .bashrc &> /dev/null
                         # Save custom changes so it can easily be reverted during wizard
                         awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' .bashrc.bak | \
@@ -357,11 +359,12 @@ echo -e "${RESET}"
 echo
 
 source ${TOP}/.venv/bin/activate
+sleep 10
 
 # Read the current mycroft-core version
 cd "$TOP"
 mycroft_core_ver=$(python -c "import mycroft.version; print('mycroft-core: '+mycroft.version.CORE_VERSION_STR)" && echo "steve" | grep -o "mycroft-core:.*")
-mycroft_core_branch=$(cd mycroft-core && git branch | grep -o "/* .*")
+mycroft_core_branch=$(cd "$TOP" && git branch | grep -o "/* .*")
 
 echo "***********************************************************************"
 echo "** Picroft enclosure platform version:" $(<"$TOP"/version)
@@ -479,11 +482,11 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
         echo
         #triggering when initial_setup
         if $( jq .initial_setup "$TOP"/.dev_opts.json ) ; then
-            echo "Mycroft is completing startup, ensuring all of the latest versions"
+            echo "${HIGHLIGHT}Mycroft is completing startup, ensuring all of the latest versions"
             echo "of skills are installed.  Within a few minutes you will be prompted"
             echo "to pair this device with the required online services at:"
-            echo "${CYAN}https://home.mycroft.ai${RESET}"
-            echo "where you can enter the pairing code."
+            echo "${CYAN}https://home.mycroft.ai$HIGHLIGHT"
+            echo "where you can enter the pairing code.$RESET"
             echo
             sleep 5
             read -p "     ${HIGHLIGHT}Press enter to launch the Mycroft CLI client.${RESET}"
