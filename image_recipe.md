@@ -11,7 +11,7 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
 * Install into Raspberry Pi and boot
   - login: pi
   - password: raspberry
-
+* ```sudo apt-get update && sudo apt-get upgrade```
 ### General configuration
   - (security measure) optional, but recommended: Change user and erase the standard user
       - create a new user ```sudo adduser USERNAME```
