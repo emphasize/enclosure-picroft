@@ -13,21 +13,28 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
   - password: raspberry
 
 ### General configuration
+  - (security measure) optional, but recommended: Change user and erase the standard user
+      - create a new user ```sudo adduser USERNAME```
+      - add USERNAME to sudo group ```sudo usermod -aG sudo USERNAME```
+      - change user to USERNAME ```su USERNAME && cd ~```
+      - Populate groups ```sudo usermod -aG `cat /etc/group | grep :pi | awk -F: '{print $1}' | tr '\n' ',' | sed 's:,$::g'` `whoami` ```
+      - Reboot and login as USERNAME
+      - Delete User pi ```sudo deluser -remove-home pi && sudo rm /etc/sudoers.d/010_pi-nopasswd```
   - ```sudo raspi-config```
-  - 1 Change User Password
-      - Enter and verify ```mycroft```
+  - 1 Change User Password (skip if new user was created)
+      - Enter and verify new password ~~```mycroft```~~
   - 2 Network Options
       - N1 Hostname
-        - Enter ```picroft```
+        - Enter new hostname ~~```picroft```~~
       - N3 Network interface names
         - pick *Yes*
   - 3 Boot Options
       - B1 Desktop / CLI
-        - B2 Console Autologin
+        - B1~~2~~ Console ~~Autologin~~ #autologin is a part of mycroft-wizard
       - B2 Wait for network
         - pick *No*
   - 4 Localization Options
-      - I3 Change Keyboard Layout
+      - I3 Change Keyboard Layout (given your country/device standards)
           - Pick *Generic 104-key PC*
           - Pick *Other*
           - Pick *English (US)*
@@ -41,9 +48,10 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
           - Pick *Yes*
   - Finish and reboot
 
-### Set the device to not use locale settings provided by ssh
+#don't see the necessity of this step
+### Set the device to not use locale settings provided by ssh~~
 * ```sudo nano /etc/ssh/sshd_config``` and comment out the line (prefix with '#')
-  ```
+  ~```
   AcceptEnv LANG LC_*
   ```
 
@@ -68,43 +76,54 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
     }
     ```
 
-## Install Picroft scripts
-* cd ~
-* wget -N https://rawgit.com/MycroftAI/enclosure-picroft/buster/home/pi/update.sh
-* bash update.sh
+## Install Picroft (/ Mycroft-core) ~~scripts~~
+* Pick your USER directory (eg ~/../* ) you want Picroft installed to ~~cd ~ ~~
+* wget -N https://raw.githubusercontent.com/emphasize/mycroft-core/refactor_setup_wizard/dev_setup.sh ~~https://rawgit.com/MycroftAI/enclosure-picroft/buster/home/pi/update.sh~~
+* bash dev_setup.sh ~~update.sh~~
 
-**The update.sh script will perform all of the following steps in this section...**
+**The Mycroft-wizard ~~update.sh script~~ will perform all of the following steps in this section...**
 When asked by dev_setup, answer as follows:
-- Y) run on the stable 'master' branch
-- Y) automatically check for updates
+- ?) run on the stable 'master' or 'dev' branch
+- ?) automatically check for updates
+- Y) start up script
+- ?) check code style (developer)
+- ?) Extended setup (Sound config)
 - Y) build Mimic locally
-- Y) add Mycroft helper commands to path
-- Y) check code style
 
-##### Enable Autologin as the 'pi' user
-
+~~##### Enable Autologin as the 'pi' user~~
+<details>
+  <summary>Cut</summary>
 * ```sudo nano /etc/systemd/system/getty@tty1.service.d/autologin.conf``` and enter:
    ```
    [Service]
    ExecStart=
    ExecStart=-/sbin/agetty --autologin pi --noclear %I     38400 linux
    ```
-
+   
 * ```sudo systemctl enable getty@tty1.service```
+</details>
 
-##### Create RAM disk and point to it
+~~##### Create RAM disk and point to it~~
+<details>
+  <summary>Cut</summary>
   - ```sudo nano /etc/fstab``` and add the line:
     ```
     tmpfs /ramdisk tmpfs rw,nodev,nosuid,size=20M 0 0
     ```
+</details>
 
-##### Environment setup (part of update.sh)
+~~##### Environment setup (part of update.sh)~~
 
+<details>
+  <summary>Cut</summary>
 * ```sudo mkdir /etc/mycroft```
 * ```sudo nano /etc/mycroft/mycroft.conf```
 * mkdir ~/bin
+</details>
 
-##### Customize .bashrc for startup
+~~##### Customize .bashrc for startup~~
+<details>
+  <summary>Cut</summary>
 * ```nano ~/.bashrc```
    uncomment *#alias ll='ls -l'* near the bottom of the file
    at the bottom add:
@@ -114,19 +133,29 @@ When asked by dev_setup, answer as follows:
    #####################################
    source ~/auto_run.sh
    ```
+</details>
 
-##### Install git and mycroft-core
+~~##### Install git and mycroft-core~~
+
+<details>
+  <summary>Cut</summary>
 * ```sudo apt-get install git```
 * ```git clone https://github.com/MycroftAI/mycroft-core.git```
 * ```cd mycroft-core```
 * ```git checkout master```
 * ```bash dev_setup.sh```
+ </details>
 
-(Wait an hour on a RPi 3B+/4)
+(The approx. time is announced in the setup process; all in all half an hour on a Pi4)
 
 ## Final steps
-* Run ```. ~/bin/mycroft-wipe --keep-skills```
+* optional: optimize the system to your needs before running mycroft-wipe
+* Run ```. mycroft-wipe --keep-skills```
 * Remove the SD card
 * Create an IMG file named "raspbian-buster_Picroft_YYYY-MM-DD.img" (optionally include an "_release-suffix.img")
+
+<details>
+  <summary>Dev</summary>
 * Compress the IMG using pishrink.sh
 * Upload and adjust redirect link from https://mycroft.ai/to/picroft-image or https://mycroft.ai/to/picroft-unstable
+</details>
