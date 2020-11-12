@@ -55,10 +55,8 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
   AcceptEnv LANG LC_*
   ```
 
-### Connect to the network
-* Either plug in Ethernet or
+### Wifi Setup
 
-  __or__
 * Guided wifi setup
   * ```sudo raspi-config```
     - 2 Network Options
