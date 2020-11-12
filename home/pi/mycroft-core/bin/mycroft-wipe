@@ -20,6 +20,8 @@ then
    exit 1
 fi
 
+TOP=$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )
+
 echo "This will completely reset your Picroft.  Are you certain you want to do this?"
 echo -n "Choice [y/N]:"
 
@@ -53,12 +55,12 @@ case $key in
       fi
 
       # Blank-out audio settings
-      echo "#!/bin/bash" > ~/audio_setup.sh
-      echo "# Use this script to execute audio setup actions" >> ~/audio_setup.sh
+      echo "#!/bin/bash" > "$TOP"/audio_setup.sh
+      echo "# Use this script to execute audio setup actions" >> "$TOP"/audio_setup.sh
 
       # Blank-out custom scripts
-      echo "#!/bin/bash" > ~/custom_setup.sh
-      echo "# Use this script to execute custom actions on startup." >> ~/custom_setup.sh
+      echo "#!/bin/bash" > "$TOP"/custom_setup.sh
+      echo "# Use this script to execute custom actions on startup." >> "$TOP"/custom_setup.sh
 
       # Blank-out network settings
       echo "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev" | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
@@ -73,8 +75,7 @@ case $key in
       rm -f /var/log/mycroft/*
 
       # Reset to run setup next boot
-      touch ~/first_run
-      rm -f ~/.setup_choices
+      rm -f "$TOP"/dev_opts.json
 
       # Reset bash history
       history -c

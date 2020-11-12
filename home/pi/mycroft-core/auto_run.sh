@@ -94,7 +94,7 @@ else
     dist=$( jq -r ".dist" "$TOP"/.dev_opts.json )
 fi
 
-export PATH="$PATH:$TOP/bin"
+
 
 #Set timer for a new pull
 time_between_updates=3600
@@ -274,7 +274,7 @@ function update_software() {
                 cd "$TOP"
                 wget -N -q $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
                 cd "$TOP"/bin
-                wget -N -q S$REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
+                wget -N -q $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
                 chmod +x mycroft-wipe
                 cp /tmp/version "$TOP"/version
 
@@ -302,7 +302,7 @@ function update_software() {
                 source "$TOP"/dev_setup.sh
             fi
         else
-            echo -n "... Skipping check for the next $(( $timedelta / 60 )) Minutes"
+            echo "... Skipping check for the next $(( $timedelta / 60 )) Minutes"
             echo
         fi
         cd "$TOP"
