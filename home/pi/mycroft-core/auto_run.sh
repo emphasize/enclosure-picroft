@@ -89,7 +89,7 @@ if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
     save_choices mimic_built true
     save_choices startup true
     save_choices autoupdate false
-    save_choices redirect none
+    save_choices restart false
 else
     dist=$( jq -r ".dist" "$TOP"/.dev_opts.json )
 fi
