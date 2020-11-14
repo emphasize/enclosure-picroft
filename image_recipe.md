@@ -6,17 +6,21 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
 
 
 ### Start with the official Raspbian Image
-* Download and burn [Raspbian Buster Lite](https://downloads.raspberrypi.org/raspbian_lite_latest).
-  <br>_Last used 2019-09-26 version_
+* Download and burn [Raspi OS Lite](https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2020-08-24/2020-08-20-raspios-buster-armhf-lite.zip).
+  <br>_Last used August 20th 2020 version_
 * Install into Raspberry Pi and boot
   - login: pi
   - password: raspberry
 * ```sudo apt-get update && sudo apt-get upgrade```
+
+[Arch Linux ARM pi4] (http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-4-latest.tar.gz)
+[Arch Linux ARM pi2/3] (http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz)
+
 ### General configuration
   - (security measure) optional, but recommended: Change user and erase the standard user
       - create a new user ```sudo adduser USERNAME```
       - add USERNAME to sudo group ```sudo usermod -aG sudo USERNAME```
-      - change user to USERNAME ```su USERNAME && cd ~```
+      - change user to USERNAME ```su USERNAME```
       - Populate groups ```sudo usermod -aG `cat /etc/group | grep :pi | awk -F: '{print $1}' | tr '\n' ',' | sed 's:,$::g'` `whoami` ```
       - Reboot and login as USERNAME
       - Delete User pi ```sudo deluser -remove-home pi && sudo rm /etc/sudoers.d/010_pi-nopasswd```
