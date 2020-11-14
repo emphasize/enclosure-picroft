@@ -38,6 +38,7 @@ REPO_PICROFT="https://raw.githubusercontent.com/emphasize/enclosure-picroft/refa
 source_name=$( readlink -f ${BASH_SOURCE})
 TOP=${source_name%/*}
 
+export PATH="$PATH:$TOP/bin:"
 
 function found_exe() {
     hash "$1" 2>/dev/null
