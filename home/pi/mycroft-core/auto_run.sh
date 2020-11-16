@@ -60,7 +60,7 @@ if found_exe tput ; then
     HIGHLIGHT=${YELLOW}
 fi
 
-# This saves the option choices; USAGE: save_choices [KEY] [VALUE]; save_choices branch true
+# This saves the option choices; USAGE: save_choices [KEY] [VALUE]; save_choices usedbranch true
 function save_choices() {
     if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
         touch "$TOP"/.dev_opts.json
@@ -402,7 +402,7 @@ if $( jq .firstrun "$TOP"/.dev_opts.json ) ; then
             echo
             echo "You are currently running with these defaults:"
             echo
-            echo "     Branch:                      ${HIGHLIGHT}$( jq -r '.branch // empty' .dev_opts.json )$RESET"
+            echo "     Branch:                      ${HIGHLIGHT}$( jq -r '.usedbranch // empty' .dev_opts.json )$RESET"
             echo "     Auto update:                 ${HIGHLIGHT}$( jq -r '.autoupdate // empty' .dev_opts.json )$RESET"
             echo "     Auto startup:                ${HIGHLIGHT}$( jq -r '.startup // empty' .dev_opts.json )$RESET"
             echo "     Input:                       ${HIGHLIGHT}$( jq -r '.audioinput' .dev_opts.json )$RESET"
