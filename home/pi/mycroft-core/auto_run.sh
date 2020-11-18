@@ -39,6 +39,8 @@ source_name=$( readlink -f ${BASH_SOURCE})
 TOP=${source_name%/*}
 
 export PATH="$PATH:$TOP/bin:"
+#prevent SSH gibberish by ncurses/dialog
+export NCURSES_NO_UTF8_ACS=1
 
 function found_exe() {
     hash "$1" 2>/dev/null
@@ -77,7 +79,6 @@ function save_choices() {
     echo "$JSON" > "$TOP"/.dev_opts.json
 }
 
-
 #Prime .dev_opts.json if no .dev_opts.json is present (=Picroft Image)
 #especially those which are not covered in the specific
 #Picroft Wizard sequence
@@ -94,8 +95,6 @@ if [[ ! -f "$TOP"/.dev_opts.json ]] ; then
 else
     dist=$( jq -r ".dist" "$TOP"/.dev_opts.json )
 fi
-
-
 
 #Set timer for a new pull
 time_between_updates=3600
@@ -360,7 +359,6 @@ echo -e "${RESET}"
 echo
 
 source ${TOP}/.venv/bin/activate
-sleep 10
 
 # Read the current mycroft-core version
 cd "$TOP"
