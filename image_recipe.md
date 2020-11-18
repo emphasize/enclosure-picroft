@@ -13,8 +13,33 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
   - password: raspberry
 * ```sudo apt-get update && sudo apt-get upgrade```
 
-[Arch Linux ARM pi4] (http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-4-latest.tar.gz)
-[Arch Linux ARM pi2/3] (http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz)
+[Arch Linux ARM pi4](http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-4-latest.tar.gz) | [Arch Linux ARM pi2/3](http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz)
+
+[Basic Instructions to create Image](https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-4)
+<details>
+  <summary>Prepare ArchArm</summary>
+  
+  * change to root: ```su```
+  * disable audit: ```sed -i 's/$/ audit=0/' /boot/cmdline.txt```
+  * Update and install prerequisites: ```pacman -Syu --noconfirm sudo wget pyenv```
+  * Change root password: ```passwd root```
+  * Create some groups: ```echo dialout plugdev spi i2c gpio pulse pulse-access | xargs -n 1 groupadd -r```
+  * (optional) Change user and erase the standard user
+      * Create user and add them to groups: ```useradd --create-home -g GROUP -G wheel,dialout,plugdev,spi,i2c,gpio,pulse,pulse-access,adm,audio,video,input,games USERNAME```
+  * grant sudo rights to everyone in wheel group (or otherwise appropriate management): ```EDITOR=nano visudo``` -> uncomment ```# %wheel ALL=(ALL) ALL```
+  * Set locale
+      * ```nano /etc/locale.gen``` -> uncomment your locale
+      * ```locale-gen```
+      * ```nano /etc/locale.conf``` -> replace with locale just created
+      * 
+      
+  * Reboot and login as USERNAME
+  * (optional) Install pyenv:
+      * edit .bashrc ```printf '\n## pyenv configs\nexport PYENV_ROOT="$HOME/.pyenv"\nexport PATH="$PYENV_ROOT/bin:$PATH"\n\nif command -v pyenv 1>/dev/null 2>&1; then\n    eval "$(pyenv init -)"\nfi' >> ~/.bashrc```
+      * retrigger bash: ```exec bash```
+      * Install localized Python 3.7: ```pyenv install -v 3.7.9```
+      * set Py 3.7.9 globally: ```pyenv global 3.7.9```
+</details>
 
 ### General configuration
   - (security measure) optional, but recommended: Change user and erase the standard user
