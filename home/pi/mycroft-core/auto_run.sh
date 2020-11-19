@@ -499,14 +499,16 @@ if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
     fi
 else
     # running in SSH session, auto-launch the CLI
-    echo
-    mycroft-help
-    echo
-    echo "***********************************************************************"
-    echo "In a few moments you will see the Mycroft CLI (command line interface)."
-    echo "Hit Ctrl+C to return to the Linux command line.  You can launch the CLI"
-    echo "again by entering:  mycroft-cli-client"
-    echo
-    sleep 2
-    "$TOP/start-mycroft.sh" cli
+    if $( jq .startup "$TOP"/.dev_opts.json) ; then
+        echo
+        mycroft-help
+        echo
+        echo "***********************************************************************"
+        echo "In a few moments you will see the Mycroft CLI (command line interface)."
+        echo "Hit Ctrl+C to return to the Linux command line.  You can launch the CLI"
+        echo "again by entering:  mycroft-cli-client"
+        echo
+        sleep 2
+        "$TOP/start-mycroft.sh" cli
+    fi
 fi
