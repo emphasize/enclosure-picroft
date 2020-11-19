@@ -434,7 +434,7 @@ fi
 if [ "$SSH_CLIENT" = "" ] && [ "$(/usr/bin/tty)" = "/dev/tty1" ]; then
 
     # Auto-update to latest version of mycroft-core (and Picroft if opted)
-    if $( jq .autoupdate "$TOP"/.dev_opts.json ) ; then
+    if $( jq .autoupdate "$TOP"/.dev_opts.json ) || $( jq .initial_setup "$TOP"/.dev_opts.json ); then
         update_software
     fi
 
