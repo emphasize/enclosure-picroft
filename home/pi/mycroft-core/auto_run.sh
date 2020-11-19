@@ -114,6 +114,38 @@ function save_volume() {
     echo "amixer set Master $@ > /dev/null 2>&1" >> "$TOP"/audio_setup.sh
 }
 
+function speak() {
+    # Generate TTS audio using Mimic 1
+    "$TOP"/mimic/bin/mimic -t $@ -o /tmp/speak.wav
+
+    # Play the audio using the configured WAV output mechanism
+    wavcmd=$( jq -r ".play_wav_cmdline" /etc/mycroft/mycroft.conf )
+    wavcmd="${wavcmd/\%1/\/tmp\/speak.wav}"
+    $( $wavcmd >/dev/null 2>&1 )
+}
+
+######################
+
+# this will regenerate new ssh keys on boot
+# if keys don't exist. This is needed because
+# ./bin/mycroft-wipe will delete old keys as
+# a security measures
+# Todo hook on other distros
+if ! ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
+    if [[ $( jq -r .dist "$TOP"/.dev_opts.json ) = "debian" ]]; then
+        echo "Generating fresh ssh host keys"
+        sudo dpkg-reconfigure openssh-server
+        sudo systemctl restart ssh
+        echo "New ssh host keys were created. this requires a reboot"
+        sleep 2
+        sudo reboot
+    else
+        echo "${HIGHLIGHT} NEW SSH KEYS HAVE TO BE CREATED ${RESET}"
+        echo
+        sleep 3
+    fi
+fi
+
 function network_setup() {
     # silent check at first
     if ping -q -c 1 -W 1 1.1.1.1 >/dev/null 2>&1 ; then
@@ -229,61 +261,64 @@ function network_setup() {
 function update_software() {
     # Look for internet connection.
     if ping -q -c 1 -W 1 1.1.1.1 > /dev/null 2>&1 ; then
-        echo "**** Checking for updates to Picroft environment"
-        echo "This might take a few minutes, please be patient..."
 
-        cd /tmp
-        # Looking for a new enclosure-picroft version
-        wget -N -q $REPO_PICROFT/home/pi/mycroft-core/version
-        if [ $? -eq 0 ] ; then
-            if [ ! -f "$TOP"/version ] ; then
-                echo "unknown" > "$TOP"/version
-            fi
+        if $( jq .startup "$TOP"/dev_opts.json ) ; then
+            echo "**** Checking for updates to Picroft environment"
+            echo "This might take a few minutes, please be patient..."
 
-            cmp /tmp/version "$TOP"/version
-            if  [ $? -eq 1 ] ; then
-                # Versions don't match...update needed
-                echo "**** Update found, downloading new Picroft scripts!"
-                if $( jq .mimic_built "$TOP"/.dev_opts.json); then
-                    speak "Updating Picroft, please hold on."
+            cd /tmp
+            # Looking for a new enclosure-picroft version
+            wget -N -q $REPO_PICROFT/home/pi/mycroft-core/version
+            if [ $? -eq 0 ] ; then
+                if [ ! -f "$TOP"/version ] ; then
+                    echo "unknown" > "$TOP"/version
                 fi
-                cd ~
 
-                if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
-                    #Regular patch process
-                    mv ~/.bashrc ~/.bashrc.bak
-                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
-                    cmp ~/.bashrc ~/.bashrc.bak
-                    if  [ $? -eq 1 ] ; then
-                        save_choices bash_patched true
-                        # delete last 4 lines of the pulled .bashrc (eg the Initialization)
-                        sed -i "$(($(wc -l < .bashrc) - 3)),\$d" ~/.bashrc
-                        # Pull the lines after "custom code below"
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' ~/.bashrc.bak | \
-                        tee -a ~/.bashrc &> /dev/null
-                        # Save custom changes so it can easily be reverted during wizard
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' ~/.bashrc.bak | \
-                        tee ~/.bashrc.patch.bak &> /dev/null
-                        echo
-                        echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
-                        echo
+                cmp /tmp/version "$TOP"/version
+                if  [ $? -eq 1 ] ; then
+                    # Versions don't match...update needed
+                    echo "**** Update found, downloading new Picroft scripts!"
+                    if $( jq .mimic_built "$TOP"/.dev_opts.json); then
+                        speak "Updating Picroft, please hold on."
                     fi
-                else
-                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
-                fi
-                cd "$TOP"
-                wget -N -q $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
-                cd "$TOP"/bin
-                wget -N -q $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
-                chmod +x mycroft-wipe
-                cp /tmp/version "$TOP"/version
+                    cd ~
 
-                # restart
-                echo "Restarting..."
-                if $( jq .mimic_built "$TOP"/.dev_opts.json); then
-                    speak "Update complete, restarting."
+                    if [ $( jq -r ".inst_type // empty" "$TOP"/.dev_opts.json ) = custom ] ; then
+                        #Regular patch process
+                        mv ~/.bashrc ~/.bashrc.bak
+                        wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
+                        cmp ~/.bashrc ~/.bashrc.bak
+                        if  [ $? -eq 1 ] ; then
+                            save_choices bash_patched true
+                            # delete last 4 lines of the pulled .bashrc (eg the Initialization)
+                            sed -i "$(($(wc -l < .bashrc) - 3)),\$d" ~/.bashrc
+                            # Pull the lines after "custom code below"
+                            awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' ~/.bashrc.bak | \
+                            tee -a ~/.bashrc &> /dev/null
+                            # Save custom changes so it can easily be reverted during wizard
+                            awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' ~/.bashrc.bak | \
+                            tee ~/.bashrc.patch.bak &> /dev/null
+                            echo
+                            echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
+                            echo
+                        fi
+                    else
+                        wget -N -q $REPO_PICROFT/home/pi/mycroft-core/.bashrc
+                    fi
+                    cd "$TOP"
+                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/auto_run.sh
+                    cd "$TOP"/bin
+                    wget -N -q $REPO_PICROFT/home/pi/mycroft-core/bin/mycroft-wipe
+                    chmod +x mycroft-wipe
+                    cp /tmp/version "$TOP"/version
+
+                    # restart
+                    echo "Restarting..."
+                    if $( jq .mimic_built "$TOP"/.dev_opts.json); then
+                        speak "Update complete, restarting."
+                    fi
+                    sudo reboot now
                 fi
-                sudo reboot now
             fi
         fi
 
@@ -308,38 +343,6 @@ function update_software() {
         cd "$TOP"
     fi
 }
-
-function speak() {
-    # Generate TTS audio using Mimic 1
-    "$TOP"/mimic/bin/mimic -t $@ -o /tmp/speak.wav
-
-    # Play the audio using the configured WAV output mechanism
-    wavcmd=$( jq -r ".play_wav_cmdline" /etc/mycroft/mycroft.conf )
-    wavcmd="${wavcmd/\%1/\/tmp\/speak.wav}"
-    $( $wavcmd >/dev/null 2>&1 )
-}
-
-######################
-
-# this will regenerate new ssh keys on boot
-# if keys don't exist. This is needed because
-# ./bin/mycroft-wipe will delete old keys as
-# a security measures
-# Todo hook on other distros
-if ! ls /etc/ssh/ssh_host_* 1> /dev/null 2>&1; then
-    if [[ $( jq -r .dist "$TOP"/.dev_opts.json ) = "debian" ]]; then
-        echo "Generating fresh ssh host keys"
-        sudo dpkg-reconfigure openssh-server
-        sudo systemctl restart ssh
-        echo "New ssh host keys were created. this requires a reboot"
-        sleep 2
-        sudo reboot
-    else
-        echo "${HIGHLIGHT} NEW SSH KEYS HAVE TO BE CREATED ${RESET}"
-        echo
-        sleep 3
-    fi
-fi
 
 echo -e "${CYAN}"
 echo " ███╗   ███╗██╗   ██╗ ██████╗██████╗  ██████╗ ███████╗████████╗"
