@@ -21,31 +21,43 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
   
   * change to root: ```su```
   * disable audit: ```sed -i 's/$/ audit=0/' /boot/cmdline.txt```
-  * Update and install prerequisites: ```pacman -Syu --noconfirm sudo wget pyenv```
+  * Update and install prerequisites: ```pacman -Syu --noconfirm sudo wget```
   * Change root password: ```passwd root```
   * Create some groups: ```echo dialout plugdev spi i2c gpio pulse pulse-access | xargs -n 1 groupadd -r```
-  * (optional) Change user and erase the standard user
-      * Create user and add them to groups: ```useradd --create-home -g GROUP -G wheel,dialout,plugdev,spi,i2c,gpio,pulse,pulse-access,adm,audio,video,input,games USERNAME```
+  * (optional) Create new user (and erase the standard user later)
+      * Create user and add them to groups: ```useradd --create-home -g <GROUP> -G wheel,dialout,plugdev,spi,i2c,gpio,pulse,pulse-access,adm,audio,video,input <USERNAME>``` ; "users" is a valid choice as primary group
+      
+      &#x1F538; Whether or not a new user is created your user should be added to this groups 
+  * set password ```passwd <USERNAME>```
   * grant sudo rights to everyone in wheel group (or otherwise appropriate management): ```EDITOR=nano visudo``` -> uncomment ```# %wheel ALL=(ALL) ALL```
   * Set locale
       * ```nano /etc/locale.gen``` -> uncomment your locale
       * ```locale-gen```
       * ```nano /etc/locale.conf``` -> replace with locale just created
-      * 
-      
-  * Reboot and login as USERNAME
-  * (optional) Install pyenv:
+  * Configure keyboard
+      * get standard from ```localectl list-keymaps```
+      * ```localectl set-keymap --no-convert <standard>```
+  * Set hostname ```hostnamectl set-hostname <HOSTNAME>```
+  * Reboot and login as <USERNAME>
+  * (if new user was created): ```sudo userdel -r alarm```
+  
+  Totally optional, but gives you more granular control 
+  * Install pyenv:
+      * install dependencies: ```pacman -S --needed base-devel openssl zlib bzip2 readline sqlite curl llvm ncurses xz tk libffi python-pyopenssl git pyenv```
       * edit .bashrc ```printf '\n## pyenv configs\nexport PYENV_ROOT="$HOME/.pyenv"\nexport PATH="$PYENV_ROOT/bin:$PATH"\n\nif command -v pyenv 1>/dev/null 2>&1; then\n    eval "$(pyenv init -)"\nfi' >> ~/.bashrc```
       * retrigger bash: ```exec bash```
-      * Install localized Python 3.7: ```pyenv install -v 3.7.9```
-      * set Py 3.7.9 globally: ```pyenv global 3.7.9```
+      * Install localized Python 3.7: ```pyenv install -v 3.7.9``` (3.7 is devs choice -Raspbian baseline- yet i've seen tests with 3.9, so change this as Mycroft progresses)
+      * set Py 3.7.9 globally: ```pyenv global 3.7.9``` (You might want to set this directory specific -pyenv local- later on)
+      * check: ```pyenv versions```
+      
+      At this point you're best adviced to make an image if things go sideways 
 </details>
 
 ### General configuration
   - (security measure) optional, but recommended: Change user and erase the standard user
-      - create a new user ```sudo adduser USERNAME```
-      - add USERNAME to sudo group ```sudo usermod -aG sudo USERNAME```
-      - change user to USERNAME ```su USERNAME```
+      - create a new user ```sudo adduser <USERNAME>```
+      - add USERNAME to sudo group ```sudo usermod -aG sudo <USERNAME>```
+      - change user to USERNAME ```su <USERNAME>```
       - Populate groups ```sudo usermod -aG `cat /etc/group | grep :pi | awk -F: '{print $1}' | tr '\n' ',' | sed 's:,$::g'` `whoami` ```
       - Reboot and login as USERNAME
       - Delete User pi ```sudo deluser -remove-home pi && sudo rm /etc/sudoers.d/010_pi-nopasswd```
@@ -77,10 +89,9 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
           - Pick *Yes*
   - Finish and reboot
 
-#don't see the necessity of this step
 ### Set the device to not use locale settings provided by ssh~~
 * ```sudo nano /etc/ssh/sshd_config``` and comment out the line (prefix with '#')
-  ~```
+  ```
   AcceptEnv LANG LC_*
   ```
 
