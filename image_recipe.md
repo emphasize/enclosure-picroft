@@ -13,6 +13,10 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
   - password: raspberry
 * ```sudo apt-get update && sudo apt-get upgrade```
 
+--------------------------
+
+Alternatives:
+
 [Arch Linux ARM pi4](http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-4-latest.tar.gz) | [Arch Linux ARM pi2/3](http://os.archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz)
 
 [Basic Instructions to create Image](https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-4)
@@ -53,7 +57,9 @@ NOTE: At startup Picroft will automatically update itself to the latest version 
       At this point you're best adviced to make an image if things go sideways 
 </details>
 
-### General configuration
+---------------------------------------------------
+
+### General configuration (Raspbian/RaspiOS)
   - (security measure) optional, but recommended: Change user and erase the standard user
       - create a new user ```sudo adduser <USERNAME>```
       - add USERNAME to sudo group ```sudo usermod -aG sudo <USERNAME>```
