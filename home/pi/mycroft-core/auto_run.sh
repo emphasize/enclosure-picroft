@@ -257,13 +257,13 @@ function update_software() {
                     if  [ $? -eq 1 ] ; then
                         save_choices bash_patched true
                         # delete last 4 lines of the pulled .bashrc (eg the Initialization)
-                        sed -i "$(($(wc -l < .bashrc) - 3)),\$d" .bashrc
+                        sed -i "$(($(wc -l < .bashrc) - 3)),\$d" ~/.bashrc
                         # Pull the lines after "custom code below"
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' .bashrc.bak | \
-                        tee -a .bashrc &> /dev/null
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /source/ {p=0}' ~/.bashrc.bak | \
+                        tee -a ~/.bashrc &> /dev/null
                         # Save custom changes so it can easily be reverted during wizard
-                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' .bashrc.bak | \
-                        tee .bashrc.patch.bak &> /dev/null
+                        awk '/CUSTOM CODE BELOW/ {p=1}; p; /END CUSTOM/ {p=0}' ~/.bashrc.bak | \
+                        tee ~/.bashrc.patch.bak &> /dev/null
                         echo
                         echo "${HIGHLIGHT}Bashrc patched. Please check ~/.bashrc[$RESET]"
                         echo
