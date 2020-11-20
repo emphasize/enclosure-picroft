@@ -38,7 +38,7 @@ REPO_PICROFT="https://raw.githubusercontent.com/emphasize/enclosure-picroft/refa
 source_name=$( readlink -f ${BASH_SOURCE})
 TOP=${source_name%/*}
 
-export PATH="$PATH:$TOP/bin:"
+export PATH="$PATH:$TOP/bin"
 #prevent SSH gibberish by ncurses/dialog
 export NCURSES_NO_UTF8_ACS=1
 
@@ -262,7 +262,7 @@ function update_software() {
     # Look for internet connection.
     if ping -q -c 1 -W 1 1.1.1.1 > /dev/null 2>&1 ; then
 
-        if $( jq .startup "$TOP"/dev_opts.json ) ; then
+        if $( jq .startup "$TOP"/.dev_opts.json ) ; then
             echo "**** Checking for updates to Picroft environment"
             echo "This might take a few minutes, please be patient..."
 
@@ -351,15 +351,18 @@ echo " ██╔████╔██║ ╚████╔╝ ██║     █
 echo " ██║╚██╔╝██║  ╚██╔╝  ██║     ██╔══██╗██║   ██║██╔══╝     ██║   "
 echo " ██║ ╚═╝ ██║   ██║   ╚██████╗██║  ██║╚██████╔╝██║        ██║   "
 echo " ╚═╝     ╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝        ╚═╝   "
-echo
-echo "        _____    _                          __   _   "
-echo "       |  __ \  (_)                        / _| | |  "
-echo "       | |__) |  _    ___   _ __    ___   | |_  | |_ "
-echo "       |  ___/  | |  / __| | '__|  / _ \  |  _| | __|"
-echo "       | |      | | | (__  | |    | (_) | | |   | |_ "
-echo "       |_|      |_|  \___| |_|     \___/  |_|    \__|"
 echo -e "${RESET}"
-echo
+if $( jq .startup "$TOP"/.dev_opts.json) ; then
+    echo -e "${CYAN}"
+    echo "        _____    _                          __   _   "
+    echo "       |  __ \  (_)                        / _| | |  "
+    echo "       | |__) |  _    ___   _ __    ___   | |_  | |_ "
+    echo "       |  ___/  | |  / __| | '__|  / _ \  |  _| | __|"
+    echo "       | |      | | | (__  | |    | (_) | | |   | |_ "
+    echo "       |_|      |_|  \___| |_|     \___/  |_|    \__|"
+    echo -e "${RESET}"
+    echo
+fi
 
 source ${TOP}/.venv/bin/activate
 
@@ -369,7 +372,9 @@ mycroft_core_ver=$(python -c "import mycroft.version; print('mycroft-core: '+myc
 mycroft_core_branch=$(cd "$TOP" && git branch | grep -o "/* .*")
 
 echo "***********************************************************************"
-echo "** Picroft enclosure platform version:" $(<"$TOP"/version)
+if $( jq .startup "$TOP"/.dev_opts.json) ; then
+    echo "** Picroft enclosure platform version:" $(<"$TOP"/version)
+fi
 echo "**                       $mycroft_core_ver ( ${mycroft_core_branch/* /} )"
 echo "***********************************************************************"
 sleep 2  # give user a few moments to notice the version
