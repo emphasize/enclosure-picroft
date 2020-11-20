@@ -128,13 +128,13 @@ Alternatives:
 * bash dev_setup.sh ~~update.sh~~
 
 **The Mycroft-wizard ~~update.sh script~~ will perform all of the following steps in this section...**
-When asked by dev_setup, answer as follows:
-- ?) run on the stable 'master' or 'dev' branch
-- ?) automatically check for updates
-- Y) start up script
-- ?) check code style (developer)
-- ?) Extended setup (Sound config)
-- Y) build Mimic locally
+~~When asked by dev_setup, answer as follows:~~
+- run on the stable 'master' or 'dev' branch
+- automatically check for updates
+- start up script
+- check code style (developer)
+- Extended setup (Sound config)
+- build Mimic locally
 
 ~~##### Enable Autologin as the 'pi' user~~
 <details>
