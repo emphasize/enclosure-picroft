@@ -121,8 +121,10 @@ Alternatives:
 ---------------------------------------------------
 
 ## Install Picroft (/ Mycroft-core) ~~scripts~~
-* Pick your USER directory (eg ~/../* ) you want Picroft installed to ~~cd ~ ~~
-* wget -N https://raw.githubusercontent.com/emphasize/mycroft-core/refactor_setup_wizard/dev_setup.sh ~~https://rawgit.com/MycroftAI/enclosure-picroft/buster/home/pi/update.sh~~
+* Pick your USER directory you want Picroft installed to ~~cd $HOME~~
+
+  (eg if you want to place it in ~/programs/, ```mkdir programs && cd programs```
+* wget -N https://raw.githubusercontent.com/emphasize/mycroft-core/dev/dev_setup.sh ~~https://rawgit.com/MycroftAI/enclosure-picroft/buster/home/pi/update.sh~~
 * bash dev_setup.sh ~~update.sh~~
 
 **The Mycroft-wizard ~~update.sh script~~ will perform all of the following steps in this section...**
