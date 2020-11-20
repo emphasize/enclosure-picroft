@@ -86,8 +86,9 @@ Alternatives:
   
   * change to root: ```su```
   * disable audit: ```sed -i 's/$/ snd-bcm2835.enable_compat_alsa=1 audit=0/' /boot/cmdline.txt```
+  * Add Rpi-Audio to bootloader ```printf "dtparam=audio=on\n" | sudo tee -a /boot/config.txt```
   * if needed:
-      * Add Rpi-Audio/GPIO/I2C to bootloader ```printf "dtparam=audio=on\ndevice_tree_param=spi=on\ndtparam=i2c_arm=on" | sudo tee -a /boot/config.txt```
+      * Add GPIO/I2C to bootloader ```printf "device_tree_param=spi=on\ndtparam=i2c_arm=on\n" | sudo tee -a /boot/config.txt```
       * Further I2C: ```printf "\ni2c-dev\ni2c-bcm2708" | sudo tee -a /etc/modules-load.d/raspberrypi.conf```
   * Update and install prerequisites: ```pacman -Syu --noconfirm sudo wget```
   * Change root password: ```passwd root```
